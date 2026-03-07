@@ -11,6 +11,11 @@ const clashUrl = document.getElementById('clashUrl');
 const surgeUrl = document.getElementById('surgeUrl');
 const emptyState = document.getElementById('emptyState');
 
+const qrModal = document.getElementById('qrModal');
+const qrCanvas = document.getElementById('qrCanvas');
+const qrText = document.getElementById('qrText');
+const closeQrModal = document.getElementById('closeQrModal');
+
 const demoVmess = [
   'vmess://ewogICJ2IjogIjIiLAogICJwcyI6ICJkZW1vLXdzLXRscyIsCiAgImFkZCI6ICJlZGdlLmV4YW1wbGUuY29tIiwKICAicG9ydCI6ICI0NDMiLAogICJpZCI6ICIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLAogICJzY3kiOiAiYXV0byIsCiAgIm5ldCI6ICJ3cyIsCiAgInRscyI6ICJ0bHMiLAogICJwYXRoIjogIi93cyIsCiAgImhvc3QiOiAiZWRnZS5leGFtcGxlLmNvbSIsCiAgInNuaSI6ICJlZGdlLmV4YW1wbGUuY29tIiwKICAiZnAiOiAiY2hyb21lIiwKICAiYWxwbiI6ICJoMixodHRwLzEuMSIKfQ=='
 ].join('\n');
@@ -88,7 +93,6 @@ form.addEventListener('submit', async (event) => {
       warningBox.classList.remove('hidden');
     }
 
-    emptyState.classList.add('hidden');
     resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (error) {
     warningBox.textContent = error.message || '请求失败';
@@ -100,26 +104,69 @@ form.addEventListener('submit', async (event) => {
 });
 
 document.addEventListener('click', async (event) => {
-  const button = event.target.closest('[data-copy-target]');
-  if (!button) {
+  const copyButton = event.target.closest('[data-copy-target]');
+  if (copyButton) {
+    const input = document.getElementById(copyButton.dataset.copyTarget);
+    if (!input?.value) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(input.value);
+      const originalText = copyButton.textContent;
+      copyButton.textContent = '已复制';
+      setTimeout(() => {
+        copyButton.textContent = originalText;
+      }, 1200);
+    } catch {
+      input.select();
+      document.execCommand('copy');
+    }
     return;
   }
-  const input = document.getElementById(button.dataset.copyTarget);
-  if (!input?.value) {
+
+  const qrButton = event.target.closest('[data-qrcode-target]');
+  if (qrButton) {
+    warningBox.classList.add('hidden');
+
+    const input = document.getElementById(qrButton.dataset.qrcodeTarget);
+    if (!input?.value) {
+      warningBox.textContent = '请先生成订阅链接，再显示二维码。';
+      warningBox.classList.remove('hidden');
+      return;
+    }
+
+    if (!window.QRCode) {
+      warningBox.textContent = '二维码组件加载失败，请刷新页面后重试。';
+      warningBox.classList.remove('hidden');
+      return;
+    }
+
+    qrCanvas.innerHTML = '';
+    qrText.textContent = input.value;
+    qrModal.classList.remove('hidden');
+    qrModal.setAttribute('aria-hidden', 'false');
+
+    new window.QRCode(qrCanvas, {
+      text: input.value,
+      width: 220,
+      height: 220,
+      correctLevel: window.QRCode.CorrectLevel.M,
+    });
     return;
   }
-  try {
-    await navigator.clipboard.writeText(input.value);
-    const originalText = button.textContent;
-    button.textContent = '已复制';
-    setTimeout(() => {
-      button.textContent = originalText;
-    }, 1200);
-  } catch {
-    input.select();
-    document.execCommand('copy');
+
+  if (event.target.closest('[data-close-modal="true"]')) {
+    closeQrDialog();
   }
 });
+
+closeQrModal.addEventListener('click', closeQrDialog);
+
+function closeQrDialog() {
+  qrModal.classList.add('hidden');
+  qrModal.setAttribute('aria-hidden', 'true');
+  qrCanvas.innerHTML = '';
+}
 
 function escapeHtml(value) {
   return String(value)

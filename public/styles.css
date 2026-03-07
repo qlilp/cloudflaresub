@@ -461,3 +461,61 @@ button.small {
 .sub-card-wide {
   grid-column: 1 / -1;
 }
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(6px);
+}
+
+.modal-dialog {
+  position: relative;
+  width: min(92vw, 420px);
+  margin: 8vh auto 0;
+  padding: 20px;
+  border-radius: 20px;
+  background: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  z-index: 1;
+}
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.modal-body {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+}
+
+.qr-box {
+  width: 240px;
+  min-height: 240px;
+  padding: 10px;
+  border-radius: 18px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+}
+
+.qr-text {
+  word-break: break-all;
+  text-align: center;
+}
